@@ -5,8 +5,20 @@ import matplotlib.pyplot as plt
 
 functionToStats = {}
 
-problem_sizes = [10, 50, 100, 200, 500, 1000, 2000]
-cap_mults = [0.25, 0.5, 1.0, 2.0, 4.0]
+problem_sizes = [50, 100, 200, 300, 400, 500, 750, 1000, 1500, 2000]
+#problem_sizes = [10, 20, 30, 40, 50, 75, 100]
+cap_mults = [0.1, 0.25, 0.5, 1.0, 2.0, 4.0]
+
+cap_index_to_color = {
+    0:"yellow",
+    1:"blue",
+    2:"green",
+    3:"cyan",
+    4:"black",
+    5:"red",
+    6: "pink",
+    7: "orange"
+}
 
 """
 pad a string with spaces for prettier printing
@@ -38,7 +50,7 @@ def runtimeandstats(method):
         cap_mult = cap_mults[(mult_index/2)%len(cap_mults) -1]
         mult_index+=1
         print "{0} problem size={1} capacity={2} time={3} cap_mult={4}".format(padded_name, size, capacity, delta, cap_mult)
-        key = "{0}, capacity={1}".format(method.__name__,cap_mult)
+        key = "{0}, cap_mult={1}".format(method.__name__,cap_mult)
         try:
             functionToStats[key].append( (size,ms) )
         except KeyError:
@@ -117,7 +129,7 @@ def randomTestForN(size, cap_mult):
         profit_weight.append((profit, weight))
 
     max_dynamic, x = knapsack_dynamic(capacity, list(profit_weight))
-    max_backtracking = knapsack_backtracking_wrapper(capacity, list(profit_weight))
+    max_backtracking, y = knapsack_backtracking_wrapper(capacity, list(profit_weight))
     assert max_dynamic == max_backtracking
 
 """
@@ -152,9 +164,10 @@ def assignment():
     weights = [2, 3, 5, 7, 1, 4, 1]
 
     profit_weight = zip(profits, weights)
+    sorted_profit_weight = sorted(profit_weight, key=lambda t: float(t[1])/t[0])
 
-    val1 = knapsack_backtracking_wrapper(capacity, profit_weight);
-    val2, keep = knapsack_dynamic(capacity, profit_weight)
+    val1, back_list = knapsack_backtracking_wrapper(capacity, profit_weight);
+    val2, dyn_matrix = knapsack_dynamic(capacity, profit_weight)
 
     val3 = knapsack_fractional_wrapper(capacity, profit_weight)
     print "solution using fractional knapsack algorithm: "+str(val3)
@@ -162,18 +175,25 @@ def assignment():
     #make sure we got the same answer for dynamic and backtracking solutions
     assert val1 == val2
     print "solution using dynamic and backtracking algorithms: "+str(val2)
-    n = 7
+    n = len(profit_weight)
     w = capacity
-    print "Object Included are the following:"
+    
+    dyn_list = []
     while (n != 0):
-        if (keep[n][w] == 1):
-            print "Object {0} with profit {1}".format(n, profits[n - 1])
+        if (dyn_matrix[n][w] == 1):
+            #print "Object {0} with profit {1}".format(n, profits[n - 1])
+            dyn_list.append( (profits[n - 1], weights[n-1]) )
             n = n - 1
             w = w - weights[n]
         else:
             n = n - 1
 
-    #clear stats so as to not pollute the plot
+    back_list = sorted([sorted_profit_weight[x-1] for x in back_list], key=lambda t: float(t[1])/t[0])
+    dyn_list = sorted(dyn_list, key=lambda t: float(t[1])/t[0])
+
+    #make sure the actual list of objects return from dynamic and backtracking is the same
+    assert back_list == dyn_list
+
     functionToStats = {}
 
 maxProfit = 0.0
@@ -198,7 +218,7 @@ def knapsack_backtracking_wrapper(M, profit_weight):
 
     #kick off the dfs for the implicit backtracking state tree
     knapsack_backtracking(len(items), items, M, 0, 0, 0, [])
-    return maxProfit
+    return maxProfit, kept
 
 """
 knapsack problem solution:
@@ -213,7 +233,7 @@ def knapsack_backtracking(n, profit_weight, capacity, index, weight, profit, cur
     global maxProfit
     global kept
 
-    if weight <= capacity and  profit > maxProfit :
+    if weight <= capacity and profit > maxProfit :
         #this is currently the best we can do! save it... 
         maxProfit = profit;
         kept = curList
@@ -249,9 +269,11 @@ def promising(n, profit_weight, item, capacity, weight, profit):
 create a plot from the stats collected by the @runtimeandstats decorator
 """
 def plot():
+    global cap_index_to_color
+    global cap_mults
     fig = plt.figure()
     dpi = fig.dpi 
-    fig.set_size_inches(1100 / dpi, 850 / dpi) 
+    fig.set_size_inches(1300 / dpi, 850 / dpi) 
     plt.ylabel("run time (ms)")
     plt.xlabel("problem size")
 
@@ -265,7 +287,10 @@ def plot():
         else:
             style = ''
             w =1
-        line = plt.plot(x, y, style, label=key, linewidth=w)
+        cap_mult = float(key[key.find('=')+1:])
+        color = cap_index_to_color[cap_mults.index(cap_mult)]
+        #use plt.semilogy for logarithmic scale
+        line = plt.plot(x, y, style, label=key, linewidth=w, color=color)
 
     plt.title("knapsack problem: dynamic prog. vs. backtracking performance")
     plt.legend(loc="best", prop={'size':10})
