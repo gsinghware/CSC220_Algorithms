@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 
 functionToStats = {}
 
+problem_sizes = [10, 50, 100, 200, 500, 1000, 2000]
+cap_mults = [0.25, 0.5, 1.0, 2.0, 4.0]
+
 """
 pad a string with spaces for prettier printing
 """
@@ -18,8 +21,12 @@ def spacepad(s):
 decorator for timing and collecting stats, as well as printing those stats
 as functions run
 """
+mult_index = 0
+
 def runtimeandstats(method):
     def timed(*args):
+        global cap_mults
+        global mult_index
         ts = time.time()
         result = method(*args)
         te = time.time()
@@ -27,9 +34,11 @@ def runtimeandstats(method):
         ms = delta*1000
         padded_name = spacepad(method.__name__)
         size = len(args[1])
-        cap_mult = args[0]/size
-        print "{0} problem size={1} capacity={2}*n time={3}".format(padded_name, size, cap_mult, delta)
-        key = "{0}, capacity={1}*n".format(method.__name__,cap_mult)
+        capacity = args[0]
+        cap_mult = cap_mults[(mult_index/2)%len(cap_mults) -1]
+        mult_index+=1
+        print "{0} problem size={1} capacity={2} time={3} cap_mult={4}".format(padded_name, size, capacity, delta, cap_mult)
+        key = "{0}, capacity={1}".format(method.__name__,cap_mult)
         try:
             functionToStats[key].append( (size,ms) )
         except KeyError:
@@ -73,7 +82,9 @@ def knapsack_dynamic(M, profit_weight):
     #initialize a 0-to-n by 0-to-M, W, matrix with zeros
     W = [[0] * (M + 1) for i in xrange(n + 1)]
 
+    #i = 0, 1, 2, ..., n
     for i, (profit, weight) in enumerate(profit_weight):
+        #capacity = 0, 1, 2, ..., M+1 
         for capacity in xrange(M + 1):
             if (weight <= capacity):
                 W[i+1][capacity] = max(profit + W[i][capacity-weight], W[i][capacity])
@@ -95,7 +106,7 @@ obtained by the two algoorithms differ.
 """
 def randomTestForN(size, cap_mult):
     profit_weight = []
-    capacity = size*cap_mult
+    capacity = int(size*cap_mult)
     for i in range(size):
         profit = random.randint(10,100)
         weight = random.randint(2,10)
@@ -114,10 +125,10 @@ Because the dynamic programming algorithms is impacted by changes of the capacit
 also test for different. See randomTestForN()
 """
 def performanceTest():
-    problem_sizes = [10, 50, 100, 200, 500, 1000, 2000]
-    cap_mults = [1,2,4]
     #problem_sizes = [10, 100, 500]
     #cap_mults = [1, 2, 4]
+    global problem_sizes
+    global cap_mults
     for size in problem_sizes:
         for cap_mult in cap_mults:
             sys.setrecursionlimit(3*size)
@@ -225,7 +236,7 @@ create a plot from the stats collected by the @runtimeandstats decorator
 def plot():
     fig = plt.figure()
     dpi = fig.dpi 
-    fig.set_size_inches(800 / dpi, 600 / dpi) 
+    fig.set_size_inches(1200 / dpi, 800 / dpi) 
     plt.ylabel("run time (ms)")
     plt.xlabel("problem size")
 
