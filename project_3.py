@@ -81,18 +81,22 @@ def knapsack_dynamic(M, profit_weight):
     n = len(profit_weight)
     #initialize a 0-to-n by 0-to-M, W, matrix with zeros
     W = [[0] * (M + 1) for i in xrange(n + 1)]
+    Keep = [[0] * (M + 1) for i in xrange(n + 1)]
 
     #i = 0, 1, 2, ..., n
     for i, (profit, weight) in enumerate(profit_weight):
         #capacity = 0, 1, 2, ..., M+1 
         for capacity in xrange(M + 1):
             if (weight <= capacity):
-                W[i+1][capacity] = max(profit + W[i][capacity-weight], W[i][capacity])
+                if (profit + W[i][capacity-weight] > W[i][capacity]):
+                    W[i+1][capacity] = profit + W[i][capacity-weight]
+                    Keep[i+1][capacity] = 1
+                else:
+                    W[i+1][capacity] = W[i][capacity]
             else:
                 W[i+1][capacity] = W[i][capacity]
     #return the lower right corner value as the max
-    return W[n][M]
-
+    return W[n][M], Keep
 
 """
 For a size and a capacity multipliers, generate a capacity and a profit_weight array,
@@ -112,7 +116,7 @@ def randomTestForN(size, cap_mult):
         weight = random.randint(2,10)
         profit_weight.append((profit, weight))
 
-    max_dynamic = knapsack_dynamic(capacity, list(profit_weight))
+    max_dynamic, x = knapsack_dynamic(capacity, list(profit_weight))
     max_backtracking = knapsack_backtracking_wrapper(capacity, list(profit_weight))
     assert max_dynamic == max_backtracking
 
@@ -150,7 +154,7 @@ def assignment():
     profit_weight = zip(profits, weights)
 
     val1 = knapsack_backtracking_wrapper(capacity, profit_weight);
-    val2 = knapsack_dynamic(capacity, profit_weight)
+    val2, keep = knapsack_dynamic(capacity, profit_weight)
 
     val3 = knapsack_fractional_wrapper(capacity, profit_weight)
     print "solution using fractional knapsack algorithm: "+str(val3)
@@ -158,10 +162,19 @@ def assignment():
     #make sure we got the same answer for dynamic and backtracking solutions
     assert val1 == val2
     print "solution using dynamic and backtracking algorithms: "+str(val2)
+    n = 7
+    w = capacity
+    print "Object Included are the following:"
+    while (n != 0):
+        if (keep[n][w] == 1):
+            print "Object {0} with profit {1}".format(n, profits[n - 1])
+            n = n - 1
+            w = w - weights[n]
+        else:
+            n = n - 1
 
     #clear stats so as to not pollute the plot
     functionToStats = {}
-
 
 maxProfit = 0.0
 kept = []
