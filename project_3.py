@@ -120,13 +120,17 @@ def _01_Knapsack_backtracking(M, profit_weight):
     max_profit = 0 # for next function call need to set this to zero
 
 def randomTestForN(size):
-    profit_weight = []
+    profit_weight1 = []
+    profit_weight2 = []
     capacity = size*4
     for i in range(size):
-        profit_weight.append( (random.randint(10,100),random.randint(2,10)) )
+        profit = random.randint(10,100)
+        weight = random.randint(2,10)
+        profit_weight1.append((profit, weight))
+        profit_weight2.append((profit, weight))
 
-    _01_Knapsack(capacity, profit_weight)
-    _01_Knapsack_backtracking(capacity, profit_weight)
+    _01_Knapsack(capacity, profit_weight1)
+    _01_Knapsack_backtracking(capacity, profit_weight2)
 
     
 def main():
@@ -160,11 +164,14 @@ def main():
     _01_Knapsack_backtracking(M_4, profit_weight_4)
     #_01_Knapsack_backtracking(50, 10, profit_weight_a)
     """
-
     problem_sizes = [10, 100, 1000]
     for size in problem_sizes:
         sys.setrecursionlimit(2*size)
         randomTestForN(size)
+    
+
+    _01_Knapsack(15, [(10,2),(5,3),(15,5),(7,7),(6,1),(18,4),(3,1)])
+    _01_Knapsack_backtracking(15, [(10,2),(5,3),(15,5),(7,7),(6,1),(18,4),(3,1)])
 
 
 if __name__ == '__main__':
