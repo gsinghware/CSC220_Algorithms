@@ -3,20 +3,18 @@
 def _frac_knapsack(M, profit_weight):
     n = len(profit_weight)
     l = sorted(profit_weight, key=lambda t: float(t[0])/t[1], reverse=True)
-    x = []
+
+    profit = 0
 
     for i in range(n):
         if (l[i][1] > M):
             break
         x.append(1.0)
+        profit += l[i][0]
         M -= l[i][1]
 
     if i < n:
-        x.append(float(M)/l[i][1])
-
-    profit = 0.0
-    for i in range(len(x)):
-        profit += (x[i]*l[i][0])
+        profit += l[i][0]*(float(M)/l[i][1])
 
     print "Max Profit: " + str(profit)
 
