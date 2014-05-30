@@ -9,7 +9,6 @@ def _frac_knapsack(M, profit_weight):
     for i in range(n):
         if (l[i][1] > M):
             break
-        x.append(1.0)
         profit += l[i][0]
         M -= l[i][1]
 
