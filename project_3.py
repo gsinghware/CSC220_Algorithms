@@ -206,13 +206,15 @@ def knapsack_backtracking(n, profit_weight, capacity, index, weight, profit, cur
         kept = curList
     #check if this node is promising
     if promising(n, profit_weight, index, capacity, weight, profit):
-        leftList = list(curList)
-        leftList.append(index + 1);
+
         #depth first search the left node (where we keep the next element)
-        knapsack_backtracking(n, profit_weight, capacity, index + 1, weight + profit_weight[index+1][1], profit + profit_weight[index+1][0], leftList);
-        rightList = list(curList)
+        visitedList = list(curList)
+        visitedList.append(index + 1);
+        knapsack_backtracking(n, profit_weight, capacity, index + 1, weight + profit_weight[index+1][1], profit + profit_weight[index+1][0], visitedList);
+        
         #depth first search the right node (where we dont keep the next element)
-        knapsack_backtracking(n, profit_weight, capacity, index + 1, weight, profit, rightList);
+        notVisitedList = list(curList)
+        knapsack_backtracking(n, profit_weight, capacity, index + 1, weight, profit, notVisitedList);
 
 """
 Is this node promising? i.e. Is the current weight less than the sack's capacity?
@@ -236,7 +238,7 @@ create a plot from the stats collected by the @runtimeandstats decorator
 def plot():
     fig = plt.figure()
     dpi = fig.dpi 
-    fig.set_size_inches(1200 / dpi, 800 / dpi) 
+    fig.set_size_inches(1100 / dpi, 850 / dpi) 
     plt.ylabel("run time (ms)")
     plt.xlabel("problem size")
 
