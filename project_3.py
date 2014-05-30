@@ -1,3 +1,22 @@
+import time
+import random
+import sys
+
+def spacepad(s):
+    s= s+":"
+    total = 30
+    l = len(s)
+    return s + "".join([' ' for i in range(total - l)])
+
+def timeit(method):
+    def timed(*args):
+        ts = time.time()
+        result = method(*args)
+        te = time.time()
+        print '%r (%r) %4.10f sec\t' % \
+              (spacepad(method.__name__), "size="+str(len(args[1])), te-ts)
+        return result
+    return timed
 
 # Fractional Knapsack problem
 def _frac_knapsack(M, profit_weight):
@@ -19,6 +38,7 @@ def _frac_knapsack(M, profit_weight):
 
 
 # 0/1 Knapsack problem using dynamic programming
+@timeit
 def _01_Knapsack(M, profit_weight):
     n = len(profit_weight)
     #initialize an n by M matrix with zeros
@@ -76,6 +96,7 @@ def backtrackto(i, M, n, profit_weight):
     if ((pack(i+1, M, n, profit_weight)) >= max_profit):
         backtrackto (i+1, M, n, profit_weight)       
 
+@timeit
 def _01_Knapsack_backtracking(M, profit_weight):
     n = len(profit_weight)
 
@@ -98,8 +119,18 @@ def _01_Knapsack_backtracking(M, profit_weight):
     print "Max Profit: " + str(max_profit)
     max_profit = 0 # for next function call need to set this to zero
 
+def randomTestForN(size):
+    profit_weight = []
+    capacity = size*4
+    for i in range(size):
+        profit_weight.append( (random.randint(10,100),random.randint(2,10)) )
 
+    _01_Knapsack(capacity, profit_weight)
+    _01_Knapsack_backtracking(capacity, profit_weight)
+
+    
 def main():
+    """
     # Fractional Knapsack problem solution
     print "Test 1 - Fractional Knapsack problem"
     M = 20      # capacity
@@ -127,7 +158,14 @@ def main():
     n_4 = 4
     profit_weight_4 = [(10,5), (40,4), (30,6), (50,3)]
     _01_Knapsack_backtracking(M_4, profit_weight_4)
-    #_01_Knapsack_backtracking(50, 10, profit_weight_a)    
+    #_01_Knapsack_backtracking(50, 10, profit_weight_a)
+    """
+
+    problem_sizes = [10, 100, 1000]
+    for size in problem_sizes:
+        sys.setrecursionlimit(2*size)
+        randomTestForN(size)
+
 
 if __name__ == '__main__':
     main()
